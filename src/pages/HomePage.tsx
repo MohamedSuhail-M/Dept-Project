@@ -48,7 +48,15 @@ export function HomePage() {
   <div className="absolute inset-0 z-10 bg-gradient-to-r from-forest via-forest/80 to-transparent" />
   <div className="relative z-20 mx-auto max-w-[1440px] px-5 py-24 lg:px-10 lg:py-40">
     <div className="hero-copy">
-      {/* Add your hero title or CTA here */}
+     <p className="eyebrow text-lime text-xs sm:text-sm tracking-widest">
+    S.I.V.E.T. COLLEGE / GOWRIVAKKAM
+  </p>
+  <h1 className="text-5xl sm:text-7xl lg:text-9xl font-bold text-cream mt-2 leading-none">
+    SIVET<br />AI.
+  </h1>
+  <p className="mt-4 text-xs sm:text-base text-cream/75 max-w-xs sm:max-w-md">
+    B.SC. COMPUTER SCIENCE WITH ARTIFICIAL INTELLIGENCE
+  </p>
     </div>
   </div>
 </section>
