@@ -35,8 +35,8 @@ export function HomePage() {
 
   return (
     <main>
-  {/* 01 — HERO */}
-<section className="hero relative w-full h-[60vh] sm:h-[80vh] lg:h-screen overflow-hidden bg-forest" aria-labelledby="hero-title">
+ {/* 01 — HERO */}
+<section className="hero relative w-full aspect-video sm:aspect-auto sm:h-[70vh] lg:h-screen overflow-hidden bg-forest" aria-labelledby="hero-title">
   <img 
     ref={imgRef} 
     src="/images/hero/ChatGPT_Image_Aug_14,_2026,_06_28_11_PM.png" 
@@ -47,7 +47,6 @@ export function HomePage() {
   <div className="hero-side" />
   <div className="hero-grain" />
 </section>
-
       {/* 02 — DEPARTMENT INTRO */}
       <section id="intro" className="bg-forest px-5 py-24 lg:px-10 lg:py-40">
         <div className="mx-auto grid max-w-[1440px] gap-14 lg:grid-cols-[1.2fr_1fr]">
