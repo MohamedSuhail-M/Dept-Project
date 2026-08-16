@@ -35,15 +35,23 @@ export function HomePage() {
 
   return (
     <main>
-      {/* 01 — HERO */}
-      <section className="hero" aria-labelledby="hero-title">
-        <img ref={imgRef} src="/images/hero/ChatGPT_Image_Aug_14,_2026,_06_28_11_PM.png" alt="S.I.V.E.T. College IT Block, Gowrivakkam, Chennai" className="hero-img" />
-        <div className="hero-overlay" />
-        <div className="hero-side" />
-        <div className="hero-grain" />
-        <div className="hero-copy">
-        </div>
-      </section>
+    {/* 01 — HERO */}
+<section className="relative overflow-hidden bg-forest min-h-[500px] sm:min-h-[600px] lg:min-h-[100vh] w-full" aria-labelledby="hero-title">
+  <div className="absolute inset-0 z-0">
+    <img 
+      ref={imgRef} 
+      src="/images/hero/ChatGPT_Image_Aug_14,_2026,_06_28_11_PM.png" 
+      alt="S.I.V.E.T. College IT Block, Gowrivakkam, Chennai" 
+      className="w-full h-full object-cover object-center transform-gpu transition-transform duration-100 ease-out" 
+    />
+  </div>
+  <div className="absolute inset-0 z-10 bg-gradient-to-r from-forest via-forest/80 to-transparent" />
+  <div className="relative z-20 mx-auto max-w-[1440px] px-5 py-24 lg:px-10 lg:py-40">
+    <div className="hero-copy">
+      {/* Add your hero title or CTA here */}
+    </div>
+  </div>
+</section>
 
       {/* 02 — DEPARTMENT INTRO */}
       <section id="intro" className="bg-forest px-5 py-24 lg:px-10 lg:py-40">
