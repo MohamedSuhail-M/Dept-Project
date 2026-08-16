@@ -458,10 +458,16 @@ function UploadPanel({ onUploaded }: { onUploaded: () => void }) {
     setStatus('Preparing…');
     const current = active?.sections.find((s) => s.number === section);
     if (!active || !current) { setError('Choose a valid archive location.'); setBusy(false); return; }
-    const cleanExt = file.name.split('.').pop()?.toLowerCase() || 'file';
-    const rawBaseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-    const safeBaseName = rawBaseName.replace(/[^a-zA-Z0-9]/g, '_');
-    const path = `nac/file-${String(fileNumber).padStart(2, '0')}/${year}/${crypto.randomUUID()}-${safeBaseName}.${cleanExt}`;
+   // 1. Sanitize the year variable (removes non-ASCII dashes/characters)
+   const safeYear = String(year).replace(/[^a-zA-Z0-9-]/g, '-');
+
+// 2. Sanitize file name
+  const cleanExt = file.name.split('.').pop()?.toLowerCase() || 'file';
+  const rawBaseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+  const safeBaseName = rawBaseName.replace(/[^a-zA-Z0-9]/g, '_');
+
+// 3. Construct clean path
+  const path = `nac/file-${String(fileNumber).padStart(2, '0')}/${safeYear}/${crypto.randomUUID()}-${safeBaseName}.${cleanExt}`;
     setStatus('Uploading…');
     const upload = await supabase.storage.from('department-files').upload(path, file, { contentType: file.type || 'application/octet-stream', upsert: false });
     if (upload.error) { setError(`Upload failed: ${upload.error.message}`); setStatus(''); setBusy(false); return; }
