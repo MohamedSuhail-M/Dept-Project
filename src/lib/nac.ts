@@ -15,18 +15,19 @@ export async function fetchDocuments(filters: { fileNumber?: number; subsectionN
 
 export async function getDocumentUrl(document: NACDocument) {
   
+  console.log('Fetching URL for document:', document);
+
   if (document.storage_path) {
     const { data } = supabase.storage
       .from('department-files')
       .getPublicUrl(document.storage_path);
-      
+
     if (data?.publicUrl) return data.publicUrl;
   }
 
-  
   if (document.file_url) return document.file_url;
 
-  throw new Error('Document file path unavailable');
+  throw new Error(`Document file path unavailable (id: ${document.id || 'unknown'}, title: ${document.title || 'untitled'})`);
 }
 
 export async function getPublicUrl(storagePath: string): Promise<string | null> {
