@@ -13,21 +13,23 @@ export async function fetchDocuments(filters: { fileNumber?: number; subsectionN
   return (data ?? []) as NACDocument[];
 }
 
-export async function getDocumentUrl(document: NACDocument) {
-  
-  console.log('Fetching URL for document:', document);
+export function getDocumentUrl(document: NACDocument): string | null {
+  if (!document) return null;
 
+  // 1. If storage_path exists, generate public URL directly
   if (document.storage_path) {
+    const cleanPath = document.storage_path.replace(/^\/+/, '');
     const { data } = supabase.storage
       .from('department-files')
-      .getPublicUrl(document.storage_path);
+      .getPublicUrl(cleanPath);
 
     if (data?.publicUrl) return data.publicUrl;
   }
 
+  // 2. Fallback to file_url
   if (document.file_url) return document.file_url;
 
-  throw new Error(`Document file path unavailable (id: ${document.id || 'unknown'}, title: ${document.title || 'untitled'})`);
+  return null;
 }
 
 export async function getPublicUrl(storagePath: string): Promise<string | null> {
