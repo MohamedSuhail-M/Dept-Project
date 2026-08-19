@@ -284,46 +284,46 @@ function DocumentManager({ docs, loading, onRefresh }: { docs: NACDocument[]; lo
                     </span>
                   </td>
                   <td className="p-3 hidden md:table-cell text-cream/50 text-xs">{formatDate(doc.uploaded_at)}</td>
-                  <td className="p-3">
-                    <div className="flex justify-end gap-1">
-                      <DocActions 
-  doc={doc} 
-  onEdit={() => setEditDoc(doc)} 
-  onDelete={() => setDeleteDoc(doc)} 
-  onView={() => {
-    const url = getDocumentPublicUrl(doc.storage_path);
-    if (url) window.open(url, '_blank');
-  }}
-  onDownload={() => downloadDocumentFile(doc)}
-                        
-export function DocActions({ doc, onEdit, onDelete, onView, onDownload }) {
-  return (
-    <div className="flex justify-end gap-1">
-      {/* View Button */}
-      <button 
-        onClick={onView} 
-        className="p-1 hover:text-lime text-cream/70"
-        title="View File"
-      >
-        View
-      </button>
+                 <td className="p-3">
+  <div className="flex justify-end gap-2">
+    {/* View Button */}
+    <button 
+      type="button"
+      onClick={() => {
+        const url = getDocumentPublicUrl(doc.storage_path);
+        if (url) window.open(url, '_blank');
+      }} 
+      className="p-1 text-xs text-cream/70 hover:text-lime"
+    >
+      View
+    </button>
 
-      {/* Download Button */}
-      <button 
-        onClick={onDownload} 
-        className="p-1 hover:text-lime text-cream/70"
-        title="Download File"
-      >
-        Download
-      </button>
+    {/* Download Button */}
+    <button 
+      type="button"
+      onClick={() => downloadDocumentFile(doc)} 
+      className="p-1 text-xs text-cream/70 hover:text-lime"
+    >
+      Download
+    </button>
 
-      {/* Your existing Edit and Delete buttons */}
-    </div>
-  );
-}
-/>
-                    </div>
-                  </td>
+    {/* Existing Edit and Delete */}
+    <button 
+      type="button"
+      onClick={() => setEditDoc(doc)} 
+      className="p-1 text-xs text-cream/70 hover:text-lime"
+    >
+      Edit
+    </button>
+    <button 
+      type="button"
+      onClick={() => setDeleteDoc(doc)} 
+      className="p-1 text-xs text-red-400 hover:text-red-300"
+    >
+      Delete
+    </button>
+  </div>
+</td>
                 </tr>
               ))}
             </tbody>
