@@ -14,10 +14,19 @@ export async function fetchDocuments(filters: { fileNumber?: number; subsectionN
 }
 
 export async function getDocumentUrl(document: NACDocument) {
-  if (document.visibility === 'public' && document.file_url) return document.file_url;
-  const { data, error } = await supabase.storage.from('department-files').createSignedUrl(document.storage_path, 600);
-  if (error || !data?.signedUrl) throw error ?? new Error('Document unavailable');
-  return data.signedUrl;
+  
+  if (document.storage_path) {
+    const { data } = supabase.storage
+      .from('department-files')
+      .getPublicUrl(document.storage_path);
+      
+    if (data?.publicUrl) return data.publicUrl;
+  }
+
+  
+  if (document.file_url) return document.file_url;
+
+  throw new Error('Document file path unavailable');
 }
 
 export async function getPublicUrl(storagePath: string): Promise<string | null> {
