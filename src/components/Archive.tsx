@@ -161,24 +161,35 @@ function DocumentRow({ document }: { document: NACDocument }) {
   {/* VIEW / OPEN BUTTON */}
   <button
     type="button"
-    onClick={() => {
-      const url = getDocumentUrl(document);
-      if (!url) return alert(`No valid file path found for: ${document.title}`);
+  onClick={() => {
+  const url = getDocumentUrl(document);
+  if (!url) return alert(`No valid file path found for: ${document.title}`);
 
-      const fileType = document.file_type || document.filename || '';
-      const isOfficeDoc = 
-        fileType.includes('word') || 
-        fileType.includes('excel') || 
-        fileType.endsWith('.docx') || 
-        fileType.endsWith('.xlsx');
+  const fileType = (document.file_type || '').toLowerCase();
+  const fileName = (document.filename || '').toLowerCase();
 
-      if (isOfficeDoc) {
-        const viewerUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(url)}`;
-        window.open(viewerUrl, '_blank', 'noopener,noreferrer');
-      } else {
-        window.open(url, '_blank', 'noopener,noreferrer');
-      }
-    }}
+  // Explicitly detect Excel and Word documents by MIME type or file extension
+  const isExcel = 
+    fileType.includes('excel') || 
+    fileType.includes('spreadsheetml') || 
+    fileName.endsWith('.xlsx') || 
+    fileName.endsWith('.xls');
+
+  const isWord = 
+    fileType.includes('word') || 
+    fileType.includes('wordprocessingml') || 
+    fileName.endsWith('.docx') || 
+    fileName.endsWith('.doc');
+
+  if (isExcel || isWord) {
+    // Force Microsoft Office Web Viewer to display Excel spreadsheet online
+    const viewerUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(url)}`;
+    window.open(viewerUrl, '_blank', 'noopener,noreferrer');
+  } else {
+    // Open PDFs and Images directly in browser
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+}}
     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-cream text-deep-emerald font-semibold rounded text-xs hover:bg-lime transition-colors"
   >
     <ExternalLink size={14} />
