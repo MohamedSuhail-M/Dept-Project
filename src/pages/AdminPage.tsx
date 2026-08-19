@@ -285,44 +285,64 @@ function DocumentManager({ docs, loading, onRefresh }: { docs: NACDocument[]; lo
                   </td>
                   <td className="p-3 hidden md:table-cell text-cream/50 text-xs">{formatDate(doc.uploaded_at)}</td>
                  <td className="p-3">
-  <div className="flex justify-end gap-2">
-    {/* View Button */}
-    <button 
-      type="button"
-      onClick={() => {
-        const url = getDocumentPublicUrl(doc.storage_path);
-        if (url) window.open(url, '_blank');
-      }} 
-      className="p-1 text-xs text-cream/70 hover:text-lime"
-    >
-      View
-    </button>
+ <div className="flex justify-end gap-2">
+  {/* VIEW / OPEN BUTTON */}
+  <button
+    type="button"
+    title="View File"
+    onClick={async () => {
+      const url = await getDocumentUrl(doc);
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        alert('Failed to get file URL');
+      }
+    }}
+    className="p-1 text-cream/70 hover:text-lime transition-colors"
+  >
+    <Eye size={14} />
+  </button>
 
-    {/* Download Button */}
-    <button 
-      type="button"
-      onClick={() => downloadDocumentFile(doc)} 
-      className="p-1 text-xs text-cream/70 hover:text-lime"
-    >
-      Download
-    </button>
+  {/* DOWNLOAD BUTTON */}
+  <button
+    type="button"
+    title="Download File"
+    onClick={async () => {
+      const url = await getDocumentUrl(doc);
+      if (!url) return alert('Failed to get file URL');
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = doc.filename || 'download';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }}
+    className="p-1 text-cream/70 hover:text-lime transition-colors"
+  >
+    <Download size={14} />
+  </button>
 
-    {/* Existing Edit and Delete */}
-    <button 
-      type="button"
-      onClick={() => setEditDoc(doc)} 
-      className="p-1 text-xs text-cream/70 hover:text-lime"
-    >
-      Edit
-    </button>
-    <button 
-      type="button"
-      onClick={() => setDeleteDoc(doc)} 
-      className="p-1 text-xs text-red-400 hover:text-red-300"
-    >
-      Delete
-    </button>
-  </div>
+  {/* EDIT BUTTON */}
+  <button
+    type="button"
+    title="Edit Document"
+    onClick={() => setEditDoc(doc)}
+    className="p-1 text-cream/70 hover:text-lime transition-colors"
+  >
+    <Pencil size={14} />
+  </button>
+
+  {/* DELETE BUTTON */}
+  <button
+    type="button"
+    title="Delete Document"
+    onClick={() => setDeleteDoc(doc)}
+    className="p-1 text-cream/70 hover:text-red-400 transition-colors"
+  >
+    <Trash2 size={14} />
+  </button>
+</div>
 </td>
                 </tr>
               ))}
