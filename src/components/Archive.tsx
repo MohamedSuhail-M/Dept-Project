@@ -1,3 +1,4 @@
+import { getDocumentUrl } from '@/lib/nac';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, FileText, LockKeyhole, Search, SlidersHorizontal, Download, ExternalLink, ChevronLeft } from 'lucide-react';
 import { nacStructure } from '@/data/nacStructure';
@@ -156,7 +157,26 @@ function DocumentRow({ document }: { document: NACDocument }) {
         </div>
       </div>
       <div className="flex gap-3">
-        <button onClick={open} className="button-dark"><ExternalLink size={14} /> OPEN</button>
+       <button
+  type="button"
+  onClick={async () => {
+    try {
+      const url = await getDocumentUrl(doc);
+      if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        alert('Could not generate document link.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error fetching document URL.');
+    }
+  }}
+  className="inline-flex items-center gap-1.5 px-4 py-2 bg-cream text-deep-emerald font-semibold rounded text-sm hover:bg-lime transition-colors"
+>
+  <ExternalLink size={14} />
+  OPEN
+</button>
         {url && <a href={url} download className="button-lime"><Download size={14} /> DOWNLOAD</a>}
       </div>
     </article>
