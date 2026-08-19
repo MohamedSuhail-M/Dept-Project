@@ -44,7 +44,36 @@ export async function replaceFile(doc: NACDocument, newFile: File): Promise<{ er
   await supabase.storage.from('department-files').remove([oldPath]);
   return { error: null };
 }
+export function getDocumentPublicUrl(storagePath: string): string | null {
+  if (!storagePath) return null;
+  
+  const { data } = supabase.storage
+    .from('department-files')
+    .getPublicUrl(storagePath);
 
+  return data.publicUrl;
+}
+
+export async function downloadDocumentFile(doc: NACDocument): Promise<{ error: string | null }> {
+  if (!doc.storage_path) return { error: 'No storage path found for this document.' };
+
+  const { data, error } = await supabase.storage
+    .from('department-files')
+    .download(doc.storage_path);
+
+  if (error || !data) return { error: error?.message || 'Failed to download file.' };
+
+  const blobUrl = URL.createObjectURL(data);
+  const link = document.createElement('a');
+  link.href = blobUrl;
+  link.download = doc.filename || 'downloaded-file';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(blobUrl);
+
+  return { error: null };
+}
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
