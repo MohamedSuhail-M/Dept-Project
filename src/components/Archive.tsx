@@ -157,19 +157,14 @@ function DocumentRow({ document }: { document: NACDocument }) {
         </div>
       </div>
       <div className="flex gap-3">
-       <button
+      <button
   type="button"
-  onClick={async () => {
-    try {
-      const url = await getDocumentUrl(doc);
-      if (url) {
-        window.open(url, '_blank', 'noopener,noreferrer');
-      } else {
-        alert('Could not generate document link.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error fetching document URL.');
+  onClick={() => {
+    const url = getDocumentUrl(doc);
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      alert(`No valid file path found for: ${doc.title}`);
     }
   }}
   className="inline-flex items-center gap-1.5 px-4 py-2 bg-cream text-deep-emerald font-semibold rounded text-sm hover:bg-lime transition-colors"
