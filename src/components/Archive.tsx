@@ -1,4 +1,5 @@
 import { getDocumentUrl } from '@/lib/nac';
+import { Eye, Download } from 'lucide-react'; 
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, FileText, LockKeyhole, Search, SlidersHorizontal, Download, ExternalLink, ChevronLeft } from 'lucide-react';
 import { nacStructure } from '@/data/nacStructure';
@@ -156,24 +157,54 @@ function DocumentRow({ document }: { document: NACDocument }) {
           <span className="mt-3 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.14em] text-cream/45">{document.visibility === 'restricted' && <LockKeyhole size={12} />} {document.visibility}</span>
         </div>
       </div>
-      <div className="flex gap-3">
-      <button
-  type="button"
-  onClick={() => {
-    const url = getDocumentUrl(doc);
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    } else {
-      alert(`No valid file path found for: ${doc.title}`);
-    }
-  }}
-  className="inline-flex items-center gap-1.5 px-4 py-2 bg-cream text-deep-emerald font-semibold rounded text-sm hover:bg-lime transition-colors"
->
-  <ExternalLink size={14} />
-  OPEN
-</button>
-        {url && <a href={url} download className="button-lime"><Download size={14} /> DOWNLOAD</a>}
-      </div>
+     <div className="flex gap-2">
+  {/* VIEW / OPEN BUTTON */}
+  <button
+    type="button"
+    onClick={() => {
+      const url = getDocumentUrl(document);
+      if (!url) return alert(`No valid file path found for: ${document.title}`);
+
+      const fileType = document.file_type || document.filename || '';
+      const isOfficeDoc = 
+        fileType.includes('word') || 
+        fileType.includes('excel') || 
+        fileType.endsWith('.docx') || 
+        fileType.endsWith('.xlsx');
+
+      if (isOfficeDoc) {
+        const viewerUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(url)}`;
+        window.open(viewerUrl, '_blank', 'noopener,noreferrer');
+      } else {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+    }}
+    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-cream text-deep-emerald font-semibold rounded text-xs hover:bg-lime transition-colors"
+  >
+    <ExternalLink size={14} />
+    VIEW
+  </button>
+
+  {/* DOWNLOAD BUTTON */}
+  <button
+    type="button"
+    onClick={() => {
+      const url = getDocumentUrl(document);
+      if (!url) return alert(`No valid file path found for: ${document.title}`);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = document.filename || 'download';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }}
+    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-lime text-deep-emerald font-semibold rounded text-xs hover:bg-cream transition-colors"
+  >
+    <Download size={14} />
+    DOWNLOAD
+  </button>
+</div>
     </article>
   );
 }
