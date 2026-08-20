@@ -578,6 +578,7 @@ function SettingsPanel() {
       setPasswordError(`Failed to update password: ${error.message}`);
     } else {
       setPasswordStatus('Password updated successfully!');
+      setPasswordError('');
       setNewPassword('');
       setConfirmPassword('');
     }
@@ -586,19 +587,18 @@ function SettingsPanel() {
   return (
     <div>
       <p className="eyebrow text-lime">ADMIN / SETTINGS</p>
-      <h1 className="display mt-4">Account <em className="text-lime">credentials.</em></h1>
+      <h1 className="display mt-4">Account <em className="text-lime">settings.</em></h1>
 
-      <div className="mt-10 grid gap-8 border-t border-cream/12 pt-8 lg:grid-cols-2">
-        {/* Update Email Form */}
-        <form onSubmit={handleEmailUpdate} className="border border-cream/12 bg-deep-emerald p-6 md:p-8">
+      <div className="mt-10 grid gap-8 md:grid-cols-2">
+        {/* Update Email */}
+        <form onSubmit={handleEmailUpdate} className="border border-cream/12 bg-deep-emerald p-8">
           <div className="flex items-center gap-3 text-lime">
             <Mail size={20} />
-            <h2 className="font-serif text-xl font-medium text-cream">Change Email Address</h2>
+            <h2 className="text-lg font-bold text-cream">Change Email Address</h2>
           </div>
-          <p className="mt-2 text-xs leading-5 text-cream/55">
-            Updating your email address will trigger confirmation emails to verify the change.
+          <p className="mt-2 text-sm leading-6 text-cream/55">
+            Update the email address associated with your administrator account.
           </p>
-
           <label className="field-label mt-6 block">
             New Email Address
             <input
@@ -610,7 +610,6 @@ function SettingsPanel() {
               required
             />
           </label>
-
           {emailError && (
             <div className="mt-4 flex items-start gap-2 text-sm text-red-400">
               <AlertCircle size={16} className="mt-0.5 shrink-0" /> {emailError}
@@ -621,48 +620,44 @@ function SettingsPanel() {
               <CheckCircle2 size={16} className="mt-0.5 shrink-0" /> {emailStatus}
             </div>
           )}
-
-          <button className="button-dark mt-6" disabled={busyEmail}>
-            <Mail size={15} /> {busyEmail ? 'SAVING…' : 'UPDATE EMAIL'}
+          <button className="button-dark mt-6" disabled={busyEmail || !newEmail}>
+            <Mail size={15} /> {busyEmail ? 'UPDATING…' : 'UPDATE EMAIL'}
           </button>
         </form>
 
-        {/* Update Password Form */}
-        <form onSubmit={handlePasswordUpdate} className="border border-cream/12 bg-deep-emerald p-6 md:p-8">
+        {/* Update Password */}
+        <form onSubmit={handlePasswordUpdate} className="border border-cream/12 bg-deep-emerald p-8">
           <div className="flex items-center gap-3 text-lime">
             <Key size={20} />
-            <h2 className="font-serif text-xl font-medium text-cream">Change Password</h2>
+            <h2 className="text-lg font-bold text-cream">Change Password</h2>
           </div>
-          <p className="mt-2 text-xs leading-5 text-cream/55">
-            Ensure your password is at least 6 characters long and secure.
+          <p className="mt-2 text-sm leading-6 text-cream/55">
+            Ensure your account is using a long, secure password.
           </p>
-
           <label className="field-label mt-6 block">
             New Password
             <input
               type="password"
-              minLength={6}
               className="field mt-2"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="••••••••"
+              minLength={6}
               required
             />
           </label>
-
           <label className="field-label mt-4 block">
-            Confirm Password
+            Confirm New Password
             <input
               type="password"
-              minLength={6}
               className="field mt-2"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
+              minLength={6}
               required
             />
           </label>
-
           {passwordError && (
             <div className="mt-4 flex items-start gap-2 text-sm text-red-400">
               <AlertCircle size={16} className="mt-0.5 shrink-0" /> {passwordError}
@@ -673,8 +668,7 @@ function SettingsPanel() {
               <CheckCircle2 size={16} className="mt-0.5 shrink-0" /> {passwordStatus}
             </div>
           )}
-
-          <button className="button-dark mt-6" disabled={busyPassword}>
+          <button className="button-dark mt-6" disabled={busyPassword || !newPassword || !confirmPassword}>
             <Key size={15} /> {busyPassword ? 'SAVING…' : 'UPDATE PASSWORD'}
           </button>
         </form>
@@ -685,13 +679,15 @@ function SettingsPanel() {
 
 function Modal({ children, onClose, title }: { children: React.ReactNode; onClose: () => void; title: string }) {
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={onClose}>
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto border border-cream/12 bg-deep-emerald p-8" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <h2 className="font-serif text-2xl font-medium text-cream">{title}</h2>
-          <button onClick={onClose} className="grid h-9 w-9 place-items-center text-cream/60 hover:text-cream hover:bg-cream/10 transition"><X size={18} /></button>
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-xl border border-cream/12 bg-deep-emerald p-6 text-cream shadow-2xl md:p-8">
+        <div className="mb-6 flex items-center justify-between border-b border-cream/12 pb-4">
+          <h2 className="font-serif text-2xl font-medium">{title}</h2>
+          <button onClick={onClose} className="p-1 text-cream/50 hover:text-cream transition-colors">
+            <X size={20} />
+          </button>
         </div>
-        <div className="mt-6">{children}</div>
+        {children}
       </div>
     </div>
   );
