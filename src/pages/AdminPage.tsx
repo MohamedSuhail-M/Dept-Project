@@ -42,7 +42,7 @@ export function AdminPage() {
 
   useEffect(() => {
     if (!session?.user) { setIsAdmin(false); return; }
-    
+    const hasAdminRole = role === 'admin' || session.user.email === 'sivetbscai@gmail.com';
     // Checks for metadata role OR specific allowed email fallback
     const role = (session.user.app_metadata as Record<string, unknown>)?.role;
     const hasAdminRole = role === 'admin';
