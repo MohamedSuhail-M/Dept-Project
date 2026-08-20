@@ -230,31 +230,37 @@ function DocumentRow({ document }: { document: NACDocument }) {
   };
 
   // Handler for downloading documents as a Blob
-  const handleDownload = async () => {
+ const handleDownload = async () => {
     const fileUrl = getDocumentUrl(document);
     if (!fileUrl) return alert(`No valid file path found for: ${document.title}`);
 
     try {
+      // 1. Try downloading via Blob (works if CORS is configured)
       const response = await fetch(fileUrl);
-      if (!response.ok) throw new Error('Failed to fetch file');
+      if (!response.ok) throw new Error('Fetch failed');
 
       const blob = await response.blob();
       const downloadUrl = window.URL.createObjectURL(blob);
 
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.setAttribute('download', document.filename || 'nac-document.pdf');
+      link.setAttribute('download', document.filename || 'nac-document');
       document.body.appendChild(link);
       link.click();
 
       link.remove();
       window.URL.revokeObjectURL(downloadUrl);
-    } catch (error) {
-      console.error('Download error:', error);
-      alert('Unable to download the file directly.');
+    } catch {
+      // 2. Fallback: Force a direct anchor click/navigation if Blob fetch is blocked by CORS
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.target = '_blank';
+      link.setAttribute('download', document.filename || 'nac-document');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     }
   };
-
   return (
     <article className="flex flex-col gap-5 border border-cream/12 bg-deep-emerald p-5 md:flex-row md:items-center md:justify-between">
       <div className="flex items-start gap-4">
