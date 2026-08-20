@@ -229,38 +229,25 @@ function DocumentRow({ document }: { document: NACDocument }) {
     }
   };
 
-  // Handler for downloading documents as a Blob
- const handleDownload = async () => {
+  // Direct download handler (No fetch / No CORS errors)
+  const handleDownload = () => {
     const fileUrl = getDocumentUrl(document);
     if (!fileUrl) return alert(`No valid file path found for: ${document.title}`);
 
-    try {
-      // 1. Try downloading via Blob (works if CORS is configured)
-      const response = await fetch(fileUrl);
-      if (!response.ok) throw new Error('Fetch failed');
+    // If using Supabase Storage, append download query param to force browser download
+    const downloadUrl = fileUrl.includes('supabase.co') 
+      ? `${fileUrl}${fileUrl.includes('?') ? '&' : '?'}download=` 
+      : fileUrl;
 
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.setAttribute('download', document.filename || 'nac-document');
-      document.body.appendChild(link);
-      link.click();
-
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
-    } catch {
-      // 2. Fallback: Force a direct anchor click/navigation if Blob fetch is blocked by CORS
-      const link = document.createElement('a');
-      link.href = fileUrl;
-      link.target = '_blank';
-      link.setAttribute('download', document.filename || 'nac-document');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    }
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.target = '_blank';
+    link.setAttribute('download', document.filename || 'nac-document');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   };
+
   return (
     <article className="flex flex-col gap-5 border border-cream/12 bg-deep-emerald p-5 md:flex-row md:items-center md:justify-between">
       <div className="flex items-start gap-4">
@@ -302,7 +289,6 @@ function DocumentRow({ document }: { document: NACDocument }) {
     </article>
   );
 }
-
 function NotFound() {
   return (
     <main className="grid min-h-screen place-items-center bg-forest p-6 text-cream">
