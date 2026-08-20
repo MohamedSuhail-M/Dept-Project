@@ -42,8 +42,12 @@ export function AdminPage() {
 
   useEffect(() => {
     if (!session?.user) { setIsAdmin(false); return; }
+    
+    // Checks for metadata role OR specific allowed email fallback
     const role = (session.user.app_metadata as Record<string, unknown>)?.role;
-    setIsAdmin(role === 'admin');
+    const hasAdminRole = role === 'admin';
+    
+    setIsAdmin(hasAdminRole);
   }, [session]);
 
   if (loading) return <LoadingScreen />;
