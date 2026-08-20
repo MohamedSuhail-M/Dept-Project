@@ -40,16 +40,17 @@ export function AdminPage() {
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (!session?.user) { setIsAdmin(false); return; }
-    const hasAdminRole = role === 'admin' || session.user.email === 'sivetbscai@gmail.com';
-    // Checks for metadata role OR specific allowed email fallback
-    const role = (session.user.app_metadata as Record<string, unknown>)?.role;
-    const hasAdminRole = role === 'admin';
-    
-    setIsAdmin(hasAdminRole);
-  }, [session]);
-
+useEffect(() => {
+  if (!session?.user) { setIsAdmin(false); return; }
+  
+  // 1. Get the role from metadata first
+  const role = (session.user.app_metadata as Record<string, unknown>)?.role;
+  
+  // 2. Check if role is admin OR if the email matches yours
+  const hasAdminRole = role === 'admin' || session.user.email === 'sivetbscai@gmail.com';
+  
+  setIsAdmin(hasAdminRole);
+}, [session]);
   if (loading) return <LoadingScreen />;
   if (!session) return <Login />;
   if (!isAdmin) return <AccessDenied onLogout={() => supabase.auth.signOut()} />;
