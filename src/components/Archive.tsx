@@ -196,32 +196,40 @@ function DocumentRow({ document }: { document: NACDocument }) {
     VIEW
   </button>
 
-  const handleDownload = async (fileUrl: string, fileName: string) => {
-  try {
-    const response = await fetch(fileUrl);
-    if (!response.ok) throw new Error('Failed to fetch file');
-    
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', fileName || 'nac-file.pdf');
-    document.body.appendChild(link);
-    link.click();
-    
-    // Cleanup
-    link.remove();
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error('Download error:', error);
-  }
-};
+ export default function Archive() {
+  // ... other state and hooks ...
 
-// Button Usage
-<button onClick={() => handleDownload(file.url, file.name)}>
-  Download NAC File
-</button>
+  // ✅ CORRECT: Place helper functions HERE (outside JSX, before return)
+  const handleDownload = async (fileUrl: string, fileName: string) => {
+    try {
+      const response = await fetch(fileUrl);
+      if (!response.ok) throw new Error('Failed to fetch file');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName || 'nac-file.pdf');
+      document.body.appendChild(link);
+      link.click();
+      
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download error:', error);
+    }
+  };
+
+  return (
+    <div>
+      {/* JSX markup goes here */}
+      <button onClick={() => handleDownload('https://example.com/file.pdf', 'document.pdf')}>
+        Download
+      </button>
+    </div>
+  );
+}
 </div>
     </article>
   );
