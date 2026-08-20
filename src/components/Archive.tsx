@@ -13,6 +13,7 @@ import {
 import { nacStructure } from '@/data/nacStructure';
 import { academicYears, type NACDocument, type NACFile } from '@/types/nac';
 import { fetchDocuments, getDocumentUrl } from '@/lib/nac';
+import { supabase } from '@/lib/supabase';
 import { Reveal } from '@/components/Shell';
 
 export function ArchiveLanding() {
@@ -203,7 +204,7 @@ export function SubsectionPage({ fileNumber, subsectionNumber }: { fileNumber: n
 function DocumentRow({ document }: { document: NACDocument }) {
   // Handler for viewing documents
   const handleView = () => {
-    const url = getDocumentUrl(document);
+    const url = getDocumentUrl(document, false);
     if (!url) return alert(`No valid file path found for: ${document.title}`);
 
     const fileType = (document.file_type || '').toLowerCase();
@@ -229,34 +230,30 @@ function DocumentRow({ document }: { document: NACDocument }) {
     }
   };
 
-  // Direct download handler (No fetch / No CORS errors)
-const handleDownload = async () => {
+  // Direct download handler using Supabase storage download SDK
+  const handleDownload = async () => {
     try {
-      // 1. Get raw file blob directly from Supabase Storage
-      // Replace 'nac-bucket' with your actual storage bucket name
+      const filePath = document.storage_path || document.filename;
+      if (!filePath) throw new Error('Missing storage path');
+
       const { data, error } = await supabase.storage
-        .from('nac-bucket') 
-        .download(document.storage_path || document.filename);
+        .from('department-files') 
+        .download(filePath);
 
       if (error || !data) throw error;
 
-      // 2. Create local object URL for the blob
       const blobUrl = URL.createObjectURL(data);
-      
-      // 3. Trigger download via hidden anchor
       const a = document.createElement('a');
       a.href = blobUrl;
       a.download = document.filename || 'nac-document.pdf';
       document.body.appendChild(a);
       a.click();
       
-      // Cleanup
       a.remove();
       URL.revokeObjectURL(blobUrl);
     } catch (err) {
       console.error('Download error:', err);
-      // Fallback: force browser navigation
-      const fallbackUrl = getDocumentUrl(document);
+      const fallbackUrl = getDocumentUrl(document, true);
       if (fallbackUrl) window.open(fallbackUrl, '_blank');
     }
   };
@@ -279,7 +276,6 @@ const handleDownload = async () => {
       </div>
 
       <div className="flex gap-2">
-        {/* VIEW BUTTON */}
         <button
           type="button"
           onClick={handleView}
@@ -289,7 +285,6 @@ const handleDownload = async () => {
           VIEW
         </button>
 
-        {/* DOWNLOAD BUTTON */}
         <button
           type="button"
           onClick={handleDownload}
@@ -302,6 +297,7 @@ const handleDownload = async () => {
     </article>
   );
 }
+
 function NotFound() {
   return (
     <main className="grid min-h-screen place-items-center bg-forest p-6 text-cream">
