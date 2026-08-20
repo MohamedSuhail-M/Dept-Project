@@ -196,25 +196,32 @@ function DocumentRow({ document }: { document: NACDocument }) {
     VIEW
   </button>
 
-  {/* DOWNLOAD BUTTON */}
-  <button
-    type="button"
-    onClick={() => {
-      const url = getDocumentUrl(document);
-      if (!url) return alert(`No valid file path found for: ${document.title}`);
+  const handleDownload = async (fileUrl: string, fileName: string) => {
+  try {
+    const response = await fetch(fileUrl);
+    if (!response.ok) throw new Error('Failed to fetch file');
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', fileName || 'nac-file.pdf');
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Download error:', error);
+  }
+};
 
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = document.filename || 'download';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }}
-    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-lime text-deep-emerald font-semibold rounded text-xs hover:bg-cream transition-colors"
-  >
-    <Download size={14} />
-    DOWNLOAD
-  </button>
+// Button Usage
+<button onClick={() => handleDownload(file.url, file.name)}>
+  Download NAC File
+</button>
 </div>
     </article>
   );
