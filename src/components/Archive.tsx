@@ -230,22 +230,35 @@ function DocumentRow({ document }: { document: NACDocument }) {
   };
 
   // Direct download handler (No fetch / No CORS errors)
-  const handleDownload = () => {
-    const fileUrl = getDocumentUrl(document);
-    if (!fileUrl) return alert(`No valid file path found for: ${document.title}`);
+const handleDownload = async () => {
+    try {
+      // 1. Get raw file blob directly from Supabase Storage
+      // Replace 'nac-bucket' with your actual storage bucket name
+      const { data, error } = await supabase.storage
+        .from('nac-bucket') 
+        .download(document.storage_path || document.filename);
 
-    // If using Supabase Storage, append download query param to force browser download
-    const downloadUrl = fileUrl.includes('supabase.co') 
-      ? `${fileUrl}${fileUrl.includes('?') ? '&' : '?'}download=` 
-      : fileUrl;
+      if (error || !data) throw error;
 
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.target = '_blank';
-    link.setAttribute('download', document.filename || 'nac-document');
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+      // 2. Create local object URL for the blob
+      const blobUrl = URL.createObjectURL(data);
+      
+      // 3. Trigger download via hidden anchor
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = document.filename || 'nac-document.pdf';
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      a.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('Download error:', err);
+      // Fallback: force browser navigation
+      const fallbackUrl = getDocumentUrl(document);
+      if (fallbackUrl) window.open(fallbackUrl, '_blank');
+    }
   };
 
   return (
