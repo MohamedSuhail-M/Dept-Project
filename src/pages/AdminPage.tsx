@@ -3,7 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import {
   LogIn, LogOut, ShieldCheck, UploadCloud, LayoutDashboard, FileText,
   Search, Trash2, Pencil, Download, Eye,
-  Replace, X, AlertCircle, CheckCircle2, Files, Lock, Globe,
+  Replace, X, AlertCircle, CheckCircle2, Files, Lock, Globe, Settings, Key, Mail
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { nacStructure } from '@/data/nacStructure';
@@ -21,7 +21,7 @@ const ACCEPTED_TYPES = [
 const ACCEPTED_EXTS = '.pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.xls,.xlsx,.ppt,.pptx';
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
-type Tab = 'overview' | 'documents' | 'upload';
+type Tab = 'overview' | 'documents' | 'upload' | 'settings';
 
 export function AdminPage() {
   const [session, setSession] = useState<Session | null>(null);
@@ -124,6 +124,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
             ['overview', 'Overview', <LayoutDashboard size={15} key="o" />],
             ['documents', 'NAC Documents', <FileText size={15} key="d" />],
             ['upload', 'Upload', <UploadCloud size={15} key="u" />],
+            ['settings', 'Settings', <Settings size={15} key="s" />],
           ] as const).map(([key, label, icon]) => (
             <button key={key} onClick={() => setTab(key as Tab)}
               className={`flex items-center gap-2 px-5 py-3 text-[11px] font-bold tracking-[0.14em] transition-colors ${tab === key ? 'border-b-2 border-lime text-lime' : 'text-cream/50 hover:text-cream'}`}>
@@ -135,6 +136,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
           {tab === 'overview' && <Overview docs={docs} loading={loadingDocs} setTab={setTab} />}
           {tab === 'documents' && <DocumentManager docs={docs} loading={loadingDocs} onRefresh={refresh} />}
           {tab === 'upload' && <UploadPanel onUploaded={refresh} />}
+          {tab === 'settings' && <SettingsPanel />}
         </div>
       </div>
     </main>
@@ -284,66 +286,55 @@ function DocumentManager({ docs, loading, onRefresh }: { docs: NACDocument[]; lo
                     </span>
                   </td>
                   <td className="p-3 hidden md:table-cell text-cream/50 text-xs">{formatDate(doc.uploaded_at)}</td>
-                 <td className="p-3">
- <div className="flex justify-end gap-2">
-  {/* VIEW / OPEN BUTTON */}
-  <button
-    type="button"
-    title="View File"
-    onClick={async () => {
-      const url = await getDocumentUrl(doc);
-      if (url) {
-        window.open(url, '_blank', 'noopener,noreferrer');
-      } else {
-        alert('Failed to get file URL');
-      }
-    }}
-    className="p-1 text-cream/70 hover:text-lime transition-colors"
-  >
-    <Eye size={14} />
-  </button>
-
-  {/* DOWNLOAD BUTTON */}
-  <button
-    type="button"
-    title="Download File"
-    onClick={async () => {
-      const url = await getDocumentUrl(doc);
-      if (!url) return alert('Failed to get file URL');
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = doc.filename || 'download';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }}
-    className="p-1 text-cream/70 hover:text-lime transition-colors"
-  >
-    <Download size={14} />
-  </button>
-
-  {/* EDIT BUTTON */}
-  <button
-    type="button"
-    title="Edit Document"
-    onClick={() => setEditDoc(doc)}
-    className="p-1 text-cream/70 hover:text-lime transition-colors"
-  >
-    <Pencil size={14} />
-  </button>
-
-  {/* DELETE BUTTON */}
-  <button
-    type="button"
-    title="Delete Document"
-    onClick={() => setDeleteDoc(doc)}
-    className="p-1 text-cream/70 hover:text-red-400 transition-colors"
-  >
-    <Trash2 size={14} />
-  </button>
-</div>
-</td>
+                  <td className="p-3">
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        title="View File"
+                        onClick={async () => {
+                          const url = await getDocumentUrl(doc);
+                          if (url) window.open(url, '_blank', 'noopener,noreferrer');
+                          else alert('Failed to get file URL');
+                        }}
+                        className="p-1 text-cream/70 hover:text-lime transition-colors"
+                      >
+                        <Eye size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        title="Download File"
+                        onClick={async () => {
+                          const url = await getDocumentUrl(doc);
+                          if (!url) return alert('Failed to get file URL');
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = doc.filename || 'download';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
+                        className="p-1 text-cream/70 hover:text-lime transition-colors"
+                      >
+                        <Download size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        title="Edit Document"
+                        onClick={() => setEditDoc(doc)}
+                        className="p-1 text-cream/70 hover:text-lime transition-colors"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        title="Delete Document"
+                        onClick={() => setDeleteDoc(doc)}
+                        className="p-1 text-cream/70 hover:text-red-400 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -354,36 +345,6 @@ function DocumentManager({ docs, loading, onRefresh }: { docs: NACDocument[]; lo
       {editDoc && <EditModal doc={editDoc} onClose={() => setEditDoc(null)} onSaved={() => { setEditDoc(null); onRefresh(); }} />}
       {deleteDoc && <DeleteModal doc={deleteDoc} onClose={() => setDeleteDoc(null)} onDeleted={() => { setDeleteDoc(null); onRefresh(); }} />}
     </div>
-  );
-}
-
-function DocActions({ doc, onEdit, onDelete }: { doc: NACDocument; onEdit: () => void; onDelete: () => void }) {
-  const [url, setUrl] = useState('');
-  const [showUrl, setShowUrl] = useState(false);
-
-  const open = async () => {
-    try {
-      const u = await getDocumentUrl(doc);
-      window.open(u, '_blank', 'noopener,noreferrer');
-    } catch { /* ignore */ }
-  };
-
-  const download = async () => {
-    try {
-      const u = await getDocumentUrl(doc);
-      setUrl(u);
-      setShowUrl(true);
-    } catch { /* ignore */ }
-  };
-
-  return (
-    <>
-      <button onClick={open} title="View" className="grid h-8 w-8 place-items-center text-cream/60 hover:text-lime hover:bg-cream/10 transition"><Eye size={14} /></button>
-      <button onClick={download} title="Download" className="grid h-8 w-8 place-items-center text-cream/60 hover:text-lime hover:bg-cream/10 transition"><Download size={14} /></button>
-      <button onClick={onEdit} title="Edit" className="grid h-8 w-8 place-items-center text-cream/60 hover:text-lime hover:bg-cream/10 transition"><Pencil size={14} /></button>
-      <button onClick={onDelete} title="Delete" className="grid h-8 w-8 place-items-center text-cream/60 hover:text-red-400 hover:bg-red-500/10 transition"><Trash2 size={14} /></button>
-      {showUrl && url && <a href={url} download className="sr-only" aria-hidden />}
-    </>
   );
 }
 
@@ -513,16 +474,13 @@ function UploadPanel({ onUploaded }: { onUploaded: () => void }) {
     setStatus('Preparing…');
     const current = active?.sections.find((s) => s.number === section);
     if (!active || !current) { setError('Choose a valid archive location.'); setBusy(false); return; }
-   // 1. Sanitize the year variable (removes non-ASCII dashes/characters)
-   const safeYear = String(year).replace(/[^a-zA-Z0-9-]/g, '-');
 
-// 2. Sanitize file name
-  const cleanExt = file.name.split('.').pop()?.toLowerCase() || 'file';
-  const rawBaseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-  const safeBaseName = rawBaseName.replace(/[^a-zA-Z0-9]/g, '_');
+    const safeYear = String(year).replace(/[^a-zA-Z0-9-]/g, '-');
+    const cleanExt = file.name.split('.').pop()?.toLowerCase() || 'file';
+    const rawBaseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+    const safeBaseName = rawBaseName.replace(/[^a-zA-Z0-9]/g, '_');
 
-// 3. Construct clean path
-  const path = `nac/file-${String(fileNumber).padStart(2, '0')}/${safeYear}/${crypto.randomUUID()}-${safeBaseName}.${cleanExt}`;
+    const path = `nac/file-${String(fileNumber).padStart(2, '0')}/${safeYear}/${crypto.randomUUID()}-${safeBaseName}.${cleanExt}`;
     setStatus('Uploading…');
     const upload = await supabase.storage.from('department-files').upload(path, file, { contentType: file.type || 'application/octet-stream', upsert: false });
     if (upload.error) { setError(`Upload failed: ${upload.error.message}`); setStatus(''); setBusy(false); return; }
@@ -570,6 +528,157 @@ function UploadPanel({ onUploaded }: { onUploaded: () => void }) {
         {status && <div className="mt-4 flex items-start gap-2 text-sm text-lime"><CheckCircle2 size={16} className="mt-0.5 shrink-0" /> {status}</div>}
         <button className="button-dark mt-7" disabled={busy || !file}><UploadCloud size={15} /> {busy ? 'PROCESSING…' : 'UPLOAD DOCUMENT'}</button>
       </form>
+    </div>
+  );
+}
+
+function SettingsPanel() {
+  const [newEmail, setNewEmail] = useState('');
+  const [emailStatus, setEmailStatus] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [busyEmail, setBusyEmail] = useState(false);
+
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordStatus, setPasswordStatus] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [busyPassword, setBusyPassword] = useState(false);
+
+  const handleEmailUpdate = async (e: FormEvent) => {
+    e.preventDefault();
+    setBusyEmail(true);
+    setEmailStatus('');
+    setEmailError('');
+
+    const { error } = await supabase.auth.updateUser({ email: newEmail });
+
+    setBusyEmail(false);
+    if (error) {
+      setEmailError(`Failed to update email: ${error.message}`);
+    } else {
+      setEmailStatus('Confirmation links sent to your old and new email addresses. Please verify to apply changes.');
+      setNewEmail('');
+    }
+  };
+
+  const handlePasswordUpdate = async (e: FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Passwords do not match.');
+      return;
+    }
+    setBusyPassword(true);
+    setPasswordStatus('');
+    setPasswordError('');
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    setBusyPassword(false);
+    if (error) {
+      setPasswordError(`Failed to update password: ${error.message}`);
+    } else {
+      setPasswordStatus('Password updated successfully!');
+      setNewPassword('');
+      setConfirmPassword('');
+    }
+  };
+
+  return (
+    <div>
+      <p className="eyebrow text-lime">ADMIN / SETTINGS</p>
+      <h1 className="display mt-4">Account <em className="text-lime">credentials.</em></h1>
+
+      <div className="mt-10 grid gap-8 border-t border-cream/12 pt-8 lg:grid-cols-2">
+        {/* Update Email Form */}
+        <form onSubmit={handleEmailUpdate} className="border border-cream/12 bg-deep-emerald p-6 md:p-8">
+          <div className="flex items-center gap-3 text-lime">
+            <Mail size={20} />
+            <h2 className="font-serif text-xl font-medium text-cream">Change Email Address</h2>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-cream/55">
+            Updating your email address will trigger confirmation emails to verify the change.
+          </p>
+
+          <label className="field-label mt-6 block">
+            New Email Address
+            <input
+              type="email"
+              className="field mt-2"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="admin@example.com"
+              required
+            />
+          </label>
+
+          {emailError && (
+            <div className="mt-4 flex items-start gap-2 text-sm text-red-400">
+              <AlertCircle size={16} className="mt-0.5 shrink-0" /> {emailError}
+            </div>
+          )}
+          {emailStatus && (
+            <div className="mt-4 flex items-start gap-2 text-sm text-lime">
+              <CheckCircle2 size={16} className="mt-0.5 shrink-0" /> {emailStatus}
+            </div>
+          )}
+
+          <button className="button-dark mt-6" disabled={busyEmail}>
+            <Mail size={15} /> {busyEmail ? 'SAVING…' : 'UPDATE EMAIL'}
+          </button>
+        </form>
+
+        {/* Update Password Form */}
+        <form onSubmit={handlePasswordUpdate} className="border border-cream/12 bg-deep-emerald p-6 md:p-8">
+          <div className="flex items-center gap-3 text-lime">
+            <Key size={20} />
+            <h2 className="font-serif text-xl font-medium text-cream">Change Password</h2>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-cream/55">
+            Ensure your password is at least 6 characters long and secure.
+          </p>
+
+          <label className="field-label mt-6 block">
+            New Password
+            <input
+              type="password"
+              minLength={6}
+              className="field mt-2"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
+          </label>
+
+          <label className="field-label mt-4 block">
+            Confirm Password
+            <input
+              type="password"
+              minLength={6}
+              className="field mt-2"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
+          </label>
+
+          {passwordError && (
+            <div className="mt-4 flex items-start gap-2 text-sm text-red-400">
+              <AlertCircle size={16} className="mt-0.5 shrink-0" /> {passwordError}
+            </div>
+          )}
+          {passwordStatus && (
+            <div className="mt-4 flex items-start gap-2 text-sm text-lime">
+              <CheckCircle2 size={16} className="mt-0.5 shrink-0" /> {passwordStatus}
+            </div>
+          )}
+
+          <button className="button-dark mt-6" disabled={busyPassword}>
+            <Key size={15} /> {busyPassword ? 'SAVING…' : 'UPDATE PASSWORD'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
