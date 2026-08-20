@@ -13,23 +13,14 @@ export async function fetchDocuments(filters: { fileNumber?: number; subsectionN
   return (data ?? []) as NACDocument[];
 }
 
-export function getDocumentUrl(document: NACDocument): string | null {
-  if (!document) return null;
-
-  // 1. If storage_path exists, generate public URL directly
-  if (document.storage_path) {
-    const cleanPath = document.storage_path.replace(/^\/+/, '');
-    const { data } = supabase.storage
-      .from('department-files')
-      .getPublicUrl(cleanPath);
-
-    if (data?.publicUrl) return data.publicUrl;
+// Example inside src/lib/nac.ts
+export function getDocumentUrl(document: NACDocument, isDownload = false) {
+  if (isDownload) {
+    // Appending download parameter with custom filename forces Supabase content-disposition header
+    return `${BASE_URL}/storage/v1/object/public/nac-bucket/${document.storage_path}?download=${encodeURIComponent(document.filename)}`;
   }
-
-  // 2. Fallback to file_url
-  if (document.file_url) return document.file_url;
-
-  return null;
+  
+  return `${BASE_URL}/storage/v1/object/public/nac-bucket/${document.storage_path}`;
 }
 
 export async function getPublicUrl(storagePath: string): Promise<string | null> {
